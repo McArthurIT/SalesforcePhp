@@ -15,6 +15,7 @@ use myoutdeskllc\SalesforcePhp\Requests\Auth\LoginApiUser;
 use myoutdeskllc\SalesforcePhp\Requests\Organization\GetLimits;
 use myoutdeskllc\SalesforcePhp\Requests\Organization\GetSupportedApiVersions;
 use myoutdeskllc\SalesforcePhp\Requests\Query\ExecuteQuery;
+use myoutdeskllc\SalesforcePhp\Requests\Query\ExecuteQueryAll;
 use myoutdeskllc\SalesforcePhp\Requests\Query\Search;
 use myoutdeskllc\SalesforcePhp\Requests\SObjects\CreateRecord;
 use myoutdeskllc\SalesforcePhp\Requests\SObjects\CreateRecords;
@@ -552,6 +553,18 @@ class SalesforceApi
         return $this->executeQueryRaw($builder->toSoql());
     }
 
+     /**
+     * Executes a query including deleted records against salesforce. Make sure this is safe on your application end.
+     *
+     * @link https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_queryall.htm
+     *
+     * @param SoqlQueryBuilder $builder
+     */
+    public function executeQueryAll(SoqlQueryBuilder $builder): array
+    {
+        return $this->executeQueryAllRaw($builder->toSoql());
+    }
+
     /**
      * Directly execute SOQL and get results.
      *
@@ -564,6 +577,22 @@ class SalesforceApi
     public function executeQueryRaw(string $rawQuery): array
     {
         $request = new ExecuteQuery($rawQuery);
+
+        return $this->executeRequest($request);
+    }
+
+    /**
+     * Directly execute SOQL using queryAll and get results.
+     *
+     * @link https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_queryall.htm
+     *
+     * @param string $rawQuery
+     *
+     * @return array
+     */
+    public function executeQueryAllRaw(string $rawQuery): array
+    {
+        $request = new ExecuteQueryAll($rawQuery);
 
         return $this->executeRequest($request);
     }
