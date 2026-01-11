@@ -4,8 +4,9 @@ namespace myoutdeskllc\SalesforcePhp\Requests\Query;
 
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class QueryRequest extends Request
+class QueryRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
     protected string $soqlQuery;
