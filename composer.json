@@ -17,6 +17,7 @@
     "require": {
         "php": ">=8.0",
         "league/csv": "^9.8",
+        "saloonphp/pagination-plugin": "^2.2",
         "saloonphp/saloon": "^3.0"
     },
     "require-dev": {
