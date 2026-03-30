@@ -15,10 +15,10 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
+        "php": ">=8.3",
         "league/csv": "^9.8",
         "saloonphp/pagination-plugin": "^2.2",
-        "saloonphp/saloon": "^3.0"
+        "saloonphp/saloon": "^4.0"
     },
     "require-dev": {
         "pestphp/pest": "4",

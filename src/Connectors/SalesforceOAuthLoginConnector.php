@@ -6,10 +6,10 @@ use myoutdeskllc\SalesforcePhp\OAuth\OAuthConfiguration;
 use myoutdeskllc\SalesforcePhp\Requests\OAuth\GetAccessTokenWithPKCERequest;
 use myoutdeskllc\SalesforcePhp\SalesforceApi;
 use Saloon\Contracts\OAuthAuthenticator;
-use Saloon\Contracts\Response;
 use Saloon\Exceptions\InvalidStateException;
 use Saloon\Http\Connector;
 use Saloon\Http\OAuth2\GetAccessTokenRequest;
+use Saloon\Http\Response;
 use Saloon\Traits\OAuth2\AuthorizationCodeGrant;
 
 class SalesforceOAuthLoginConnector extends Connector
@@ -22,8 +22,8 @@ class SalesforceOAuthLoginConnector extends Connector
         $this->oauthConfig()->setClientId($configuration->getClientId());
         $this->oauthConfig()->setClientSecret($configuration->getClientSecret());
         $this->oauthConfig()->setRedirectUri($configuration->getRedirectUri());
-        $this->oauthConfig()->setAuthorizeEndpoint($this->resolveBaseUrl().'/services/oauth2/authorize');
-        $this->oauthConfig()->setTokenEndpoint($this->resolveBaseUrl().'/services/oauth2/token');
+        $this->oauthConfig()->setAuthorizeEndpoint('/services/oauth2/authorize');
+        $this->oauthConfig()->setTokenEndpoint('/services/oauth2/token');
         $this->codeVerifier = $codeVerifier;
     }
 

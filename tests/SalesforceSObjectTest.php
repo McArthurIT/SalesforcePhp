@@ -1,69 +1,90 @@
 <?php
 
-beforeEach(function () {
-    getAPI();
-});
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 test('Can describe all SObjects available on an instance', function () {
-    $api = getAPI()->getSObjectApi();
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/list_objects'),
+    ]);
+    $api = getAPI($mockClient)->getSObjectApi();
     $objects = $api->listObjects();
 
     expect($objects)->toHaveKey('sobjects');
 });
 
 test('Can get basic SObject information', function () {
-    $api = getAPI()->getSObjectApi();
-    $objectInformation = $api->getObjectInformation('Virtual_Youtuber__c');
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/object_information'),
+    ]);
+    $api = getAPI($mockClient)->getSObjectApi();
+    $objectInformation = $api->getObjectInformation('Account');
 
-    expect($objectInformation)->toHaveKey('objectDescribe.label', 'Virtual Youtuber');
-    expect($objectInformation)->toHaveKey('objectDescribe.name', 'Virtual_Youtuber__c');
+    expect($objectInformation)->toHaveKey('objectDescribe.label', 'Account');
+    expect($objectInformation)->toHaveKey('objectDescribe.name', 'Account');
 });
 
 test('Can describe a custom SObject', function () {
-    $api = getAPI()->getSObjectApi();
-    $objectInformation = $api->describeObject('Virtual_Youtuber__c');
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/describe_object'),
+    ]);
+    $api = getAPI($mockClient)->getSObjectApi();
+    $objectInformation = $api->describeObject('Account');
 
     expect($objectInformation)->tohaveKeys(['label', 'fields', 'recordTypeInfos', 'childRelationships']);
 });
 
 test('Can get a more concise list of fields from an SObject', function () {
-    $api = getAPI()->getSObjectApi();
-    $fieldInformation = $api->getObjectFields('Virtual_Youtuber__c');
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/describe_object_fields'),
+    ]);
+    $api = getAPI($mockClient)->getSObjectApi();
+    $fieldInformation = $api->getObjectFields('Account');
     // expect 6 default fields to be appearing in here
     expect($fieldInformation[0])->toHaveCount(6);
 });
 
 test('Can request a more specific set of field keys from an SObject (add scale to selection list)', function () {
-    $api = getAPI()->getSObjectApi();
-    $fieldInformation = $api->getObjectFields('Virtual_Youtuber__c', ['scale']);
-    // expect 6 default fields to be appearing in here
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/describe_object_fields_scale'),
+    ]);
+    $api = getAPI($mockClient)->getSObjectApi();
+    $fieldInformation = $api->getObjectFields('Account', ['scale']);
+    // expect 7 fields (6 default + scale)
     expect($fieldInformation[0])->toHaveCount(7);
 });
 
 test('Can create a record', function () {
-    $api = getAPI();
-    $faker = Faker\Factory::create();
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/create_record'),
+    ]);
+    $api = getAPI($mockClient);
 
-    $response = $api->createRecord('Virtual_Youtuber__c', [
-        'name'       => $faker->name,
-        'Twitter__c' => $faker->randomAscii(5),
+    $response = $api->createRecord('Account', [
+        'Name' => 'Test Company',
+        'Website' => 'https://example.com',
     ]);
 
     expect($response)->toHaveKey('success', true);
 });
 
 test('Can create multiple records', function () {
-    $api = getAPI();
-    $faker = Faker\Factory::create();
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/create_records'),
+    ]);
+    $api = getAPI($mockClient);
 
-    $response = $api->createRecords('Virtual_Youtuber__c', [
-        ['name' => $faker->firstName, 'Twitter__c' => $faker->randomAscii(5)],
-        ['name' => $faker->lastName, 'Twitter__c' => $faker->randomAscii(5)],
+    $response = $api->createRecords('Account', [
+        ['Name' => 'Test Company 1', 'Website' => 'https://example1.com'],
+        ['Name' => 'Test Company 2', 'Website' => 'https://example2.com'],
     ]);
     expect($response)->toHaveCount(2);
 });
 
 test('Throws on non-existent records', function () {
-    $api = getAPI();
-    $api->getRecord('Virtual_Youtuber__c', 'TestNotExisting', ['Id']);
+    $mockClient = new MockClient([
+        MockResponse::fixture('sobject/not_found'),
+    ]);
+    $api = getAPI($mockClient);
+    $api->getRecord('Account', 'TestNotExisting', ['Id']);
 })->throws(\Saloon\Exceptions\Request\Statuses\NotFoundException::class);

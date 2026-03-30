@@ -2,16 +2,16 @@
 
 use myoutdeskllc\SalesforcePhp\Constants\BulkApiOptions;
 use myoutdeskllc\SalesforcePhp\Support\SalesforceJob;
-
-beforeEach(function () {
-    getAPI();
-});
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 test('Can create a bulk API job', function () {
-    $api = getAPI();
-    $api = $api->getBulkApi();
+    $mockClient = new MockClient([
+        MockResponse::fixture('bulk/create_job'),
+    ]);
+    $api = getAPI($mockClient)->getBulkApi();
     $salesforceJob = new SalesforceJob($api);
-    $salesforceJob->setObject('Virtual_Youtuber__c');
+    $salesforceJob->setObject('Account');
     $salesforceJob->setOperation(BulkApiOptions::INSERT);
 
     $salesforceJob->initJob();
@@ -20,34 +20,48 @@ test('Can create a bulk API job', function () {
 });
 
 test('Can upload records to a bulk API job', function () {
-    $api = getAPI()->getBulkApi();
+    $mockClient = new MockClient([
+        MockResponse::fixture('bulk/create_job_upload'),
+        MockResponse::fixture('bulk/upload_data'),
+        MockResponse::fixture('bulk/close_job'),
+    ]);
+    $api = getAPI($mockClient)->getBulkApi();
     $salesforceJob = new SalesforceJob($api);
-    $salesforceJob->setObject('Virtual_Youtuber__c');
+    $salesforceJob->setObject('Account');
     $salesforceJob->setOperation(BulkApiOptions::INSERT);
     $salesforceJob->initJob();
 
-    $salesforceJob->setCsvFile(__DIR__.'/fixtures/vtubers.csv')->upload();
+    $salesforceJob->setCsvFile(__DIR__.'/fixtures/accounts.csv')->upload();
     $salesforceJob->closeJob();
 
     expect($salesforceJob->getState())->toEqual('UploadComplete');
 });
 
 test('Can get existing job status', function () {
-    $api = getAPI()->getBulkApi();
+    $mockClient = new MockClient([
+        MockResponse::fixture('bulk/create_job_status'),
+        MockResponse::fixture('bulk/get_job'),
+    ]);
+    $api = getAPI($mockClient)->getBulkApi();
     $salesforceJob = new SalesforceJob($api);
-    $salesforceJob->setObject('Virtual_Youtuber__c');
+    $salesforceJob->setObject('Account');
     $salesforceJob->setOperation(BulkApiOptions::INSERT);
     $salesforceJob->initJob();
     // after this, store the ID and throw out the job
     $queriedJob = SalesforceJob::getExistingJobById($salesforceJob->getJobId(), $api);
     // It should contain our object as the target of the job
-    expect($queriedJob->getObject())->toEqual('Virtual_Youtuber__c');
+    expect($queriedJob->getObject())->toEqual('Account');
 });
 
 test('Can abort a job', function () {
-    $api = getAPI()->getBulkApi();
+    $mockClient = new MockClient([
+        MockResponse::fixture('bulk/create_job_abort'),
+        MockResponse::fixture('bulk/get_job_abort'),
+        MockResponse::fixture('bulk/abort_job'),
+    ]);
+    $api = getAPI($mockClient)->getBulkApi();
     $salesforceJob = new SalesforceJob($api);
-    $salesforceJob->setObject('Virtual_Youtuber__c');
+    $salesforceJob->setObject('Account');
     $salesforceJob->setOperation(BulkApiOptions::INSERT);
     $salesforceJob->initJob();
     // after this, store the ID and throw out the job
